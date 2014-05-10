@@ -1,0 +1,18 @@
+Cabal-Version: >= 1.2
+Name:            quid2-util
+Version:         0.1
+Stability:       alpha  
+Synopsis:        Utilities
+License:         BSD3
+Copyright:       (c) 2014 Pasqualino 'Titto' Assini (tittoassini@gmail.com)
+Author:          Pasqualino 'Titto' Assini (tittoassini@gmail.com)
+Maintainer:      Pasqualino 'Titto' Assini (tittoassini@gmail.com)
+Homepage:        http://quid2.org
+Build-Type:      Simple
+
+Library   
+  Hs-Source-Dirs:  src
+  Build-Depends:   base,deepseq,MissingH,old-time,bytestring,transformers,time,old-locale,process,http-types >=0.6.11,utf8-string >= 0.3.7,http-conduit >= 1.9.0 ,text ,smtps-gmail >= 1.1.0 ,mime-mail ,network == 2.4.* ,conduit-extra ,connection>=0.2.1 ,tls ,scotty>=0.7.2 ,HaskellNet-SSL ,HaskellNet
+  Exposed-Modules: Quid2.Util.Strict ,Quid2.Util.String ,Quid2.Util.Time ,Quid2.Util.HTTP ,Quid2.Util.Voice ,Quid2.Util.Email
+
+
