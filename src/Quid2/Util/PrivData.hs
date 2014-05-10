@@ -4,7 +4,7 @@ Access private data spun by propellor.
 module Quid2.Util.PrivData(getPrivData,PrivDataField(..)) where
 
 import Control.Applicative
-import System.Directory
+
 import qualified Data.Map as M
 import Propellor.Types hiding (Address)
 import Quid2.Util.Strict
