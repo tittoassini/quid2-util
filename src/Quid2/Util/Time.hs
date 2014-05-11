@@ -1,6 +1,6 @@
 module Quid2.Util.Time(now
                       ,HMS(..),hms
-                      ,wait,timeOut
+                      ,wait,waitFor,timeOut
                       ,msecs,secs,minutes
                       ) where
 
@@ -12,6 +12,10 @@ import System.Timeout
 import Data.Time.Clock
 import Data.Time.Format
 import System.Locale
+import Control.Monad.IO.Class
+
+waitFor :: MonadIO m => Int -> m ()
+waitFor = liftIO . wait
 
 msecs t = t * 1000 
 
