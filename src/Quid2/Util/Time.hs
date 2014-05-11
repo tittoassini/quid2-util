@@ -1,5 +1,5 @@
 module Quid2.Util.Time(now
-                      ,HMS(..),hms
+                      ,HMS(..),hms,timeDateTime
                       ,wait,waitFor,timeOut
                       ,msecs,secs,minutes
                       ) where
@@ -13,6 +13,8 @@ import Data.Time.Clock
 import Data.Time.Format
 import System.Locale
 import Control.Monad.IO.Class
+
+t = timeDateTime
 
 waitFor :: MonadIO m => Int -> m ()
 waitFor = liftIO . wait
@@ -52,4 +54,5 @@ hms = do
 timeMM = timeF "%M"
 timeHHMM = timeF "%H:%M"
 timeHHMMSS = timeF "%H:%M.%S"
+timeDateTime = timeF "%F %H:%M.%S"
 timeF format = fmap (formatTime defaultTimeLocale format) getCurrentTime
