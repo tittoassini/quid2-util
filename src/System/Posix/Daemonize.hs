@@ -1,4 +1,5 @@
 {-# LANGUAGE RankNTypes #-}
+-- Code taken from package hdaemonize
 module System.Posix.Daemonize (
   -- * Simple daemonization
   daemonize, 
@@ -96,7 +97,7 @@ daemonize program =
               exitImmediately ExitSuccess
                               
       p' = do changeWorkingDirectory "/"
-              -- closeFileDescriptors
+              closeFileDescriptors
               blockSignal sigHUP
               program 
 
