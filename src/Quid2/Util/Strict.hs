@@ -1,6 +1,8 @@
 {-# LANGUAGE TemplateHaskell, ScopedTypeVariables #-}
 module Quid2.Util.Strict where 
 
+-- see enclosed-exceptions
+
 import Control.DeepSeq
 import qualified Control.Exception as E 
 

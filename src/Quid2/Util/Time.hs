@@ -1,7 +1,7 @@
 module Quid2.Util.Time(now
                       ,HMS(..),hms,timeDateTime
-                      ,wait,waitFor,timeOut
-                      ,msecs,secs,minutes
+                      ,wait,waitFor,timeout,timeOut
+                      ,msecs,secs,minutes,timeF
                       ) where
 
 import Control.Concurrent(threadDelay)
@@ -13,6 +13,9 @@ import Data.Time.Clock
 import Data.Time.Format
 import System.Locale
 import Control.Monad.IO.Class
+import Control.DeepSeq (NFData, ($!!))
+import Control.Exception
+import Control.Applicative
 
 t = timeDateTime
 
@@ -33,8 +36,12 @@ now = do
   TOD now _  <- getClockTime
   return now
 
-timeOut :: Int -> IO a -> IO a                                       
-timeOut microSecs = fmap (fromMaybe (error "Timeout")) . timeout microSecs
+x :: IO ()
+x = timeOut (secs 1) $ wait (secs 15)
+
+-- stupid
+timeOut :: NFData b => Int -> IO b -> IO b
+timeOut microSecs op = ((fromMaybe (error "Timeout")) <$> timeout microSecs op) >>= (evaluate $!!)
 
 -- Hour Minutes Seconds
 data HMS = HMS {hh,mm,ss::Int} deriving (Eq,Ord)

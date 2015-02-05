@@ -1,9 +1,8 @@
 {-# LANGUAGE PackageImports ,NoMonomorphismRestriction ,GADTs ,ExistentialQuantification ,OverloadedStrings ,ScopedTypeVariables #-}
 
 module Quid2.Util.HTTP(--openConn,onConn,Conn
-                      --,getURL,
-                    getMime
-                    ) where
+  getURL,getMime
+  ) where
 
 -- timeOut,testLog,mapTVar,modTVar,gid,getMimeType,p,now,minute,sec,msec,getURL,void,noop,waitFor,waitForEver,readAll,readChanTill,writeAll,onChan,srv
 -- ,module System.Log.Logger
@@ -46,6 +45,8 @@ import Control.Monad.IO.Class (MonadIO (liftIO))
 import Control.Exception
 import Data.String
 import Quid2.Util.Time
+-- import Network.HTTP
+import Control.Exception.Enclosed
 
 {-
 import Quid2.Util.Log
@@ -69,11 +70,27 @@ tt = getMime 10 "http://notquiteher.unknwon"
 getURL :: Int -> URL -> IO String
 getURL timeOutInSecs url = timeOut (secs timeOutInSecs) $ fmap L.toString $ simpleHttp (fromString url)
 -}
+
+g = getURL 2 "http://quid2.org/js/quid2/ui/Tabs.js"
+
+getURL :: Int -> String -> IO (Either SomeException String)
+getURL timeOutInSecs url = tryDeep $ fmap snd $ getMime_ timeOutInSecs url
+
+{-
+getURL_ timeOutInSecs url = strictTry $ timeOut (secs timeOutInSecs) $ do
+      rsp <- simpleHTTP (getRequest url)
+      -- fetch document and return it (as a 'String'.)
+      getResponseBody rsp
+-}
+
 -- BUG: Inefficient, should use HEAD and caching
 -- BUG: return mime type might include encoding!
 -- BUG: always interpreted as UTF-8 ?
 getMime :: Int -> String -> IO (String, String)
-getMime timeOutInSecs url = fmap (either (\(err::SomeException) -> error . unwords $ ["Could not GET",url,show err]) id) $ try $ timeOut (secs timeOutInSecs) $ do 
+getMime timeOutInSecs url = fmap (either (\(err::SomeException) -> error . unwords $ ["Could not GET",url,show err]) id) $ try $ getMime_ timeOutInSecs url 
+
+getMime_ :: Int -> String -> IO (String, String)
+getMime_ timeOutInSecs url = timeOut (secs timeOutInSecs) $ do 
   url' <- parseUrl (fromString url)
   liftIO $ withManager $ \man -> do
   r <- httpLbs (url' { decompress = browserDecompress}) man
