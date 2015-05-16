@@ -1,7 +1,7 @@
 module Quid2.Util.Time(now
                       ,HMS(..),hms,timeDateTime
                       ,wait,waitFor,timeout,timeOut
-                      ,msecs,secs,minutes,timeF
+                      ,msecs,secs,minutes,timeF,parseDDMMMYY
                       ) where
 
 import Control.Concurrent(threadDelay)
@@ -16,13 +16,14 @@ import Control.Monad.IO.Class
 import Control.DeepSeq (NFData, ($!!))
 import Control.Exception
 import Control.Applicative
+import Data.Time.Calendar(toGregorian)
 
 t = timeDateTime
 
 waitFor :: MonadIO m => Int -> m ()
 waitFor = liftIO . wait
 
-msecs t = t * 1000 
+msecs t = t * 1000
 
 secs t = t * msecs 1000
 
@@ -47,7 +48,7 @@ timeOut microSecs op = ((fromMaybe (error "Timeout")) <$> timeout microSecs op) 
 data HMS = HMS {hh,mm,ss::Int} deriving (Eq,Ord)
 
 instance Show HMS where show hms = concat . intersperse ":" . map show $ [hh hms,mm hms,ss hms]
-                          
+
 showHHMMSS (h,m,s) = concat . intersperse ":" . map show $ [h,m,s]
 
 -- UTC/GMT time
@@ -55,7 +56,7 @@ hms = do
   numSecs <- fmap ((`div` 1000000000000) . fromEnum . utctDayTime) getCurrentTime
   let secs = (`mod` 60) numSecs
   let numMinutes = ((`mod` 60) . (`div` 60)) numSecs
-  let numHours = (`div` 60) . (`div` 60) $ numSecs 
+  let numHours = (`div` 60) . (`div` 60) $ numSecs
   return $ HMS numHours numMinutes secs
 
 timeMM = timeF "%M"
@@ -63,3 +64,9 @@ timeHHMM = timeF "%H:%M"
 timeHHMMSS = timeF "%H:%M.%S"
 timeDateTime = timeF "%F %H:%M.%S"
 timeF format = fmap (formatTime defaultTimeLocale format) getCurrentTime
+
+-- 27-Apr-15
+-- parseDDMMMYY :: String -> Maybe Date
+v = parseDDMMMYY "7-Apr-15"
+parseDDMMMYY :: String -> Maybe (Integer, Int, Int)
+parseDDMMMYY s = toGregorian <$> parseTime defaultTimeLocale "%e-%b-%y" s

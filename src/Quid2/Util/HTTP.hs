@@ -7,7 +7,7 @@ module Quid2.Util.HTTP(--openConn,onConn,Conn
 -- timeOut,testLog,mapTVar,modTVar,gid,getMimeType,p,now,minute,sec,msec,getURL,void,noop,waitFor,waitForEver,readAll,readChanTill,writeAll,onChan,srv
 -- ,module System.Log.Logger
 {-
-import Data.FileStore.Utils 
+import Data.FileStore.Utils
 import Debug.Trace
 
 import System.IO
@@ -87,60 +87,60 @@ getURL_ timeOutInSecs url = strictTry $ timeOut (secs timeOutInSecs) $ do
 -- BUG: return mime type might include encoding!
 -- BUG: always interpreted as UTF-8 ?
 getMime :: Int -> String -> IO (String, String)
-getMime timeOutInSecs url = fmap (either (\(err::SomeException) -> error . unwords $ ["Could not GET",url,show err]) id) $ try $ getMime_ timeOutInSecs url 
+getMime timeOutInSecs url = fmap (either (\(err::SomeException) -> error . unwords $ ["Could not GET",url,show err]) id) $ try $ getMime_ timeOutInSecs url
 
 getMime_ :: Int -> String -> IO (String, String)
-getMime_ timeOutInSecs url = timeOut (secs timeOutInSecs) $ do 
+getMime_ timeOutInSecs url = timeOut (secs timeOutInSecs) $ do
   url' <- parseUrl (fromString url)
   liftIO $ withManager $ \man -> do
   r <- httpLbs (url' { decompress = browserDecompress}) man
   let sc = statusCode . responseStatus $ r
   if 200 <= sc && sc < 300
         then return (C.decode $ B.unpack $ snd $ head $ filter (\(n,_) -> n == "Content-Type") $ responseHeaders r,L.toString $ responseBody r)
-        else error . unwords $ ["HTTP error code:",show sc]             
+        else error . unwords $ ["HTTP error code:",show sc]
 
 {- http-enumerator version
 getMime :: Int -> String -> IO (String, String)
-getMime timeOutInSecs url = fmap (either (\(err::SomeException) -> error . unwords $ ["Could not GET",url,show err]) id) $ try $ timeOut (secs timeOutInSecs) $ do 
+getMime timeOutInSecs url = fmap (either (\(err::SomeException) -> error . unwords $ ["Could not GET",url,show err]) id) $ try $ timeOut (secs timeOutInSecs) $ do
     url' <- parseUrl (fromString url)
     Response sc hds b <- liftIO $ withManager $ httpLbsRedirect
                                             $ url' { decompress = browserDecompress }
-    
+
     if 200 <= sc && sc < 300
         then return (C.decode $ B.unpack $ snd $ head $ filter (\(n,_) -> n == "Content-Type") hds,L.toString b)
-        else error . unwords $ ["HTTP error code:",show sc]             
---}             
+        else error . unwords $ ["HTTP error code:",show sc]
+--}
 
 {-
 -- x = getURLs ("http://quid2.net/api/loginAnon?callback=cb","http://quid2.net/api/loginAnon?callback=cb2")
 
 getURL :: URL -> IO String
-getURL url = do 
+getURL url = do
   (uri,rsp) <- Network.Browser.browse $ do
     setAllowRedirects True -- handle HTTP redirects
     setOutHandler $ print -- const (return ())
     -- setEventHandler ()
     request $ getRequest url
-    st <- getBrowserState  
+    st <- getBrowserState
     map close $ bsConnectionPool st
   return $ rspBody rsp
 
 -- doOp act = lift act defaultBrowserState
 
-getURLs (url1,url2) = do 
+getURLs (url1,url2) = do
   (uri,rsp) <- Network.Browser.browse $ do
     setAllowRedirects True -- handle HTTP redirects
     setOutHandler $ print -- const (return ())
     -- setEventHandler ()
-    request $ getRequest url1    
-    request $ getRequest url2    
+    request $ getRequest url1
+    request $ getRequest url2
   return $ rspBody rsp
 -}
 
 {-
 type URL = String
--- openReq :: 
--- class Conn where Request 
+-- openReq ::
+-- class Conn where Request
 
 -- data Conn = forall conn. (HStream conn) => Conn URL (TVar [conn])
 data Conn = Conn URL deriving Show
@@ -159,7 +159,7 @@ onConn (Conn baseURL) name pars = do
   let url = baseURL ++ name ++ "?" ++  urlEncodeVars pars
   dbg url
   getURL 45 url
--}  
+-}
 
 {-
 simpleHTTP r = do
@@ -178,22 +178,22 @@ readChanTill ch timeout interval maxItems = do
   TOD start _ <- getClockTime
   rd start []
   where
-    rd start rs = do 
-          let timeoutInSecs = toInteger $ timeout `div` sec 1 
+    rd start rs = do
+          let timeoutInSecs = toInteger $ timeout `div` sec 1
           empty <- isEmptyChan ch
-          if empty 
+          if empty
             then do
               now <- now
               if now-start > timeoutInSecs || length rs >= maxItems
                 then return $ take maxItems $ reverse rs
-                else threadDelay interval >> rd start rs             
+                else threadDelay interval >> rd start rs
             else readChan ch >>= \v -> rd start (v : rs)
-                    
-timeOut :: Int -> IO a -> IO a                                       
+
+timeOut :: Int -> IO a -> IO a
 timeOut microSecs = fmap (fromMaybe (error "Timeout")) . timeout microSecs
 
 -- Current time in seconds.
-now :: IO Integer 
+now :: IO Integer
 now = do
   TOD now _  <- getClockTime
   return now
@@ -204,9 +204,9 @@ writeAll chan = mapM_ (writeChan chan)
 -- readAll :: Chan a -> IO [a]
 readAll chan = do
   empty <- isEmptyChan chan
-  if empty  
-    then return [] 
-    else liftM2 (:) (readChan chan) (readAll chan) 
+  if empty
+    then return []
+    else liftM2 (:) (readChan chan) (readAll chan)
 
 mapTVar var f = atomically $ do
     v <- readTVar var
@@ -220,19 +220,19 @@ modTVar var f = atomically $ do
 
 -- |Generate a globally unique id.
 gid :: IO String
-gid = fmap show uuid 
+gid = fmap show uuid
 
--- |Print 
--- p h t= putStrLn $ h ++ ": " ++ show t 
-p h t = debugM h $ show t 
+-- |Print
+-- p h t= putStrLn $ h ++ ": " ++ show t
+p h t = debugM h $ show t
 
 minute t = t * sec 60
 sec t = t * msec 1000
-msec t = t * 1000 
+msec t = t * 1000
 
 
 
--- Stolen from Gitit: 
+-- Stolen from Gitit:
 -- | Perform a function in a temporary directory and clean up.
 withTempDir :: FilePath -> (FilePath -> IO a) -> IO a
 withTempDir baseName = bracket (createTempDir 0 baseName) removeDirectoryRecursive
@@ -260,33 +260,33 @@ getMimeTypeForExtension ext = do
 
 readMimeTypesFile :: FilePath -> IO (M.Map String String)
 readMimeTypesFile f = liftM (foldr (go . words) M.empty . lines) $ readFile f
-     where 
+     where
        go []          m = m  -- skip blank lines
-       go (('#':_):_)     m = m  -- skip comment lines 
+       go (('#':_):_)     m = m  -- skip comment lines
        go (x:xs) m = foldr (`M.insert` x) m xs
 
 tst = do
   -- mimes <- readMimeTypesFile "/etc/mime.types"
-  -- writeFile "MimeType.hs" $ "module HaskellD.MimeType where\nimport qualified Data.Map as M\n\nmimeTypes = M." ++ show mimes 
+  -- writeFile "MimeType.hs" $ "module HaskellD.MimeType where\nimport qualified Data.Map as M\n\nmimeTypes = M." ++ show mimes
   print $ dropWhile (=='.') $ map toLower "some.js"
   print $ getMimeType ".js"
   print $ getMimeType ""
   print $ getMimeType ".lhs"
-  
+
 t = nodups [("jij",3),("jij",3),("x",4),("x",4),("x",5)]
 
-nodups [] = []  
+nodups [] = []
 nodups (h:t) = h : nod h t
 
 nod p [] = []
 nod p (h:t) | p == h    = nod p t
-            | otherwise = h : nod h t            
+            | otherwise = h : nod h t
 
-void o = o >> return ()    
+void o = o >> return ()
 
 noop _ = return ()
 
-waitForEver = forever $ threadDelay (sec 1)  
+waitForEver = forever $ threadDelay (sec 1)
 waitFor = threadDelay
 -}
 
