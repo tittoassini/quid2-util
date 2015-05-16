@@ -45,4 +45,5 @@ Library
                  , transformers
                  , unix
                  , utf8-string >= 0.3.7
+                 , unix-time == 0.3.4
   Exposed-Modules: Quid2.Util.Strict ,Quid2.Util.String ,Quid2.Util.Time ,Quid2.Util.HTTP ,Quid2.Util.Voice ,Quid2.Util.Email ,Quid2.Util.PrivData ,Quid2.Util.Dir ,Quid2.Util.Service ,System.Posix.Daemonize
