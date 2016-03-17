@@ -32,12 +32,12 @@ data Config c = Config {
   ,tmpDir ::  FilePath
   ,appConf :: Maybe c   
   } deriving (Show)
-                
+
 data RunMode = Interactive -- Running in a GHCi session
              | Command     -- Running as a compiled application from command line
-             | Service     -- Running as a system service               
+             | Service     -- Running as a system service
   deriving (Eq,Show)
-           
+
 initService name realMain = initServiceFull name realMain Nothing
 
 {-
@@ -55,20 +55,20 @@ initServiceFull name realMain maybeRootMain = do
     let mode | pname == "<interactive>" = Interactive
              | length args == 1 && head args `elem` ["start", "restart", "stop"] = Service
              | otherwise = Command
-    
+
     --(cfg,cmd) <- initService2 mode args name realMain
-    --info $ "initService2: " ++ show mode ++ " " ++ show cfg    
+    --info $ "initService2: " ++ show mode ++ " " ++ show cfg
     -- setupLog name mode logFile
     -- when (isNothing conf) $ dbg "No configuration provided."
     when (isJust maybeRootMain && mode /= Service) (error "Privileged actions can only be run as a service.")
-    
+
     let cmd = doMain name realMain mode args
     if mode /= Service 
       then cmd 
       else serviced $ simpleDaemon {
       program = const $ cmd
-      --,privilegedAction = maybe (return ()) (\f -> f cfg) maybeRootMain          
-      ,privilegedAction = fromMaybe (return ()) maybeRootMain          
+      --,privilegedAction = maybe (return ()) (\f -> f cfg) maybeRootMain
+      ,privilegedAction = fromMaybe (return ()) maybeRootMain
       ,user  = Just name               
       ,group = Just name
       }
@@ -97,16 +97,16 @@ doMain name realMain mode args = do
               mconf <- try (readFile configFile)        
               return $ either (\(e::IOException) -> Nothing) (Just . read) mconf
     when (isNothing conf) $ dbg "No configuration provided."    
-              
+
     -- Any exception will cause a restart    
     let cfg = Config {stateDir=stateDir,logDir=logDir,tmpDir=tmpDir,privateKeyFile=privFile,appConf=conf}
-        
+
     handle (\(e::SomeException) -> fatalErr (show e)) $ realMain cfg    
 
 setupLog name mode logFile = do
     -- Setup log    
     updateGlobalLogger rootLoggerName  (setLevel $ if mode /= Service then DEBUG else INFO) -- DEBUG) -- INFO
-                             
+
     -- E.catch (removeFile logFile) (\e -> return ())
     -- On disk, register everything. 
     h <- if mode /= Service

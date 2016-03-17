@@ -42,6 +42,7 @@ Library
                  , text
                  , time
                  , tls
+                   -- < 1.3
                  , transformers
                  , unix
                  , utf8-string >= 0.3.7

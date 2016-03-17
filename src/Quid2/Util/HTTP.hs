@@ -4,37 +4,7 @@ module Quid2.Util.HTTP(--openConn,onConn,Conn
   getURL,getMime
   ) where
 
--- timeOut,testLog,mapTVar,modTVar,gid,getMimeType,p,now,minute,sec,msec,getURL,void,noop,waitFor,waitForEver,readAll,readChanTill,writeAll,onChan,srv
--- ,module System.Log.Logger
-{-
-import Data.FileStore.Utils
-import Debug.Trace
-
-import System.IO
-import System.Exit (ExitCode(..))
-import qualified Data.ByteString.Lazy as B (ByteString)
-import Data.ByteString.Lazy.UTF8 (toString)
-import Control.Exception (bracket)
-import System.Directory
-import System.FilePath ((</>), (<.>))
-import System.IO.Error (isAlreadyExistsError)
-import Control.Monad (liftM,liftM2,forever)
-import "mtl" Control.Monad.Trans(liftIO)
-import System.UUID.V4
-import Text.JSON
-import qualified Data.Map as M
-import Data.Char (toLower)
-import HaskellD.MimeType
-import Control.Concurrent(forkIO,threadDelay)
-import Control.Concurrent.STM
-import Control.Concurrent.Chan
-import System.Time
--- import System.Log.Logger
--- import System.Log.Handler.Simple
-import System.Timeout
-import Data.Maybe
--}
-
+import Prelude
 import Quid2.Util.Time(secs)
 import Network.HTTP.Types
 import qualified Codec.Binary.UTF8.String as C
@@ -52,7 +22,7 @@ import Control.Exception.Enclosed
 import Quid2.Util.Log
 -- import Network.HTTP.Enumerator -- (simpleHttp,parseUrl,httpLbsRedirect,Response(..))
 import Data.Maybe
-import Network.HTTP(urlEncodeVars)
+import thNetwork.HTTP(urlEncodeVars)
 -- import Network.Browser
 -- import Control.Concurrent.STM
 import Control.Monad (filterM, liftM, when)
@@ -92,7 +62,7 @@ getMime timeOutInSecs url = fmap (either (\(err::SomeException) -> error . unwor
 getMime_ :: Int -> String -> IO (String, String)
 getMime_ timeOutInSecs url = timeOut (secs timeOutInSecs) $ do
   url' <- parseUrl (fromString url)
-  liftIO $ withManager $ \man -> do
+  liftIO $ {-newManager tlsManagerSettings-} withManager $ \man -> do
   r <- httpLbs (url' { decompress = browserDecompress}) man
   let sc = statusCode . responseStatus $ r
   if 200 <= sc && sc < 300
