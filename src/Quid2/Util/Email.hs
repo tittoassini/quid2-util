@@ -8,10 +8,12 @@ import Control.Monad
 import Data.Text hiding (words,unwords)
 import Quid2.Util.PrivData
 import Quid2.Util.Time(secs)
+-- import Network.Mail.SMTP
 
 t = email titto "prova" "da Quid2.Util.Email"
 
-y = getPwd
+-- retrieve password
+y = getPwd quidagent
 
 titto = "tittoassini@gmail.com"
 
