@@ -5,21 +5,21 @@ module Quid2.Util.Time(now
                       ,msecs,secs,minutes,timeF,parseDDMMMYY,parseAmericanDate,formatAsAmericanDate
                       ) where
 
-import Prelude
+import           Prelude
 -- import Prelude(Show)
-import Control.Concurrent(threadDelay)
-import Data.List
-import Data.Maybe
-import System.Time
-import System.Timeout
-import Data.Time.Clock
-import Data.Time.Format
+import           Control.Concurrent     (threadDelay)
+import           Data.List
+import           Data.Maybe
+import           Data.Time.Clock
+import           Data.Time.Format
+import           System.Time
+import           System.Timeout
 -- import System.Locale
-import Control.Monad.IO.Class
-import Control.DeepSeq (NFData, ($!!))
-import Control.Exception
-import Control.Applicative
-import "time" Data.Time.Calendar(toGregorian)
+import           Control.Applicative
+import           Control.DeepSeq        (NFData, ($!!))
+import           Control.Exception
+import           Control.Monad.IO.Class
+import           "time" Data.Time.Calendar     (toGregorian)
 -- import "time" Data.Time.Format
 
 t = timeDateTime
@@ -77,7 +77,7 @@ parseDDMMMYY :: String -> Maybe (Integer, Int, Int)
 parseDDMMMYY s = toGregorian <$> parseTimeM True defaultTimeLocale "%e-%b-%y" s
 
 a = map parseAmericanDate ["Nov 27, 2015","Jan 8, 2013"]
--- f =  map formatAsAmericanDate $ a 
+-- f =  map formatAsAmericanDate $ a
 
 parseAmericanDate :: String -> Maybe (Integer,Int,Int)
 parseAmericanDate s = toGregorian <$> parseTimeM True defaultTimeLocale americanFormat s
@@ -86,3 +86,4 @@ americanFormat = "%b %e, %Y"
 
 formatAsAmericanDate :: FormatTime t => t -> String
 formatAsAmericanDate = formatTime defaultTimeLocale americanFormat
+

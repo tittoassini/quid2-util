@@ -1,11 +1,11 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE TemplateHaskell, ScopedTypeVariables #-}
-module Quid2.Util.Strict (ok,oks,oksL,strictTry, strictTryS,eitherTryS,strictGet,trys) where 
+module Quid2.Util.Strict (ok,oks,oksL,strictTry, strictTryS,eitherTryS,strictGet,trys,untry) where 
 import Prelude
 -- see enclosed-exceptions
 import Data.Maybe
-import Data.Either
+-- import Data.Either
 import Control.DeepSeq
 import qualified Control.Exception as E 
 
@@ -29,6 +29,9 @@ strictTry op = E.catch (op >>= \v -> return . Right $! deepseq v v) (\(err:: E.S
 strictGet :: NFData b => IO b -> IO b
 strictGet op = do
   o <- strictTry op
+  untry o
+
+untry o =
   case o of
     Right !r -> return r
     Left  !e -> error . show $ e 

@@ -1,7 +1,7 @@
 {-# LANGUAGE PackageImports ,NoMonomorphismRestriction ,GADTs ,ExistentialQuantification ,OverloadedStrings ,ScopedTypeVariables #-}
 
 module Quid2.Util.HTTP(--openConn,onConn,Conn
-  getURL,getMime
+  getURL,getURLFull,getMime
   ) where
 
 import Prelude
@@ -17,6 +17,7 @@ import Data.String
 import Quid2.Util.Time
 -- import Network.HTTP
 import Control.Exception.Enclosed
+import Quid2.Util.Strict
 
 {-
 import Quid2.Util.Log
@@ -35,16 +36,20 @@ t = getMime 10 "http://kamus.it"
 ttt = getMime 10 "http://google.com"
 tt = getMime 10 "http://notquiteher.unknwon"
 
+x = getURL "https://www.google.co.uk/finance?q=LON%3ASEML"
+
 {-
 -- Get an URL content and close the connection.
 getURL :: Int -> URL -> IO String
 getURL timeOutInSecs url = timeOut (secs timeOutInSecs) $ fmap L.toString $ simpleHttp (fromString url)
 -}
 
-g = getURL 2 "http://quid2.org/js/quid2/ui/Tabs.js"
+g = getURLFull 2 "http://quid2.org/js/quid2/ui/Tabs.js"
 
-getURL :: Int -> String -> IO (Either SomeException String)
-getURL timeOutInSecs url = tryDeep $ fmap snd $ getMime_ timeOutInSecs url
+getURL url = getURLFull 30 url >>= untry
+
+getURLFull :: Int -> String -> IO (Either SomeException String)
+getURLFull timeOutInSecs url = tryDeep $ fmap snd $ getMime_ timeOutInSecs url
 
 {-
 getURL_ timeOutInSecs url = strictTry $ timeOut (secs timeOutInSecs) $ do
@@ -61,14 +66,20 @@ getMime timeOutInSecs url = fmap (either (\(err::SomeException) -> error . unwor
 
 getMime_ :: Int -> String -> IO (String, String)
 getMime_ timeOutInSecs url = timeOut (secs timeOutInSecs) $ do
+  print url
   url' <- parseUrl (fromString url)
-  liftIO $ {-newManager tlsManagerSettings-} withManager $ \man -> do
-  r <- httpLbs (url' { decompress = browserDecompress}) man
-  let sc = statusCode . responseStatus $ r
-  if 200 <= sc && sc < 300
-        then return (C.decode $ B.unpack $ snd $ head $ filter (\(n,_) -> n == "Content-Type") $ responseHeaders r,L.toString $ responseBody r)
-        else error . unwords $ ["HTTP error code:",show sc]
-
+  -- liftIO $ {-newManager tlsManagerSettings-} withManager $ \man -> do
+  liftIO $ do
+    man <- newManager tlsManagerSettings 
+    r <- httpLbs (url' { decompress = browserDecompress}) man
+    let sc = statusCode . responseStatus $ r
+    let er = if 200 <= sc && sc < 300
+             then Right (C.decode $ B.unpack $ snd $ head $ filter (\(n,_) -> n == "Content-Type") $ responseHeaders r,L.toString $ responseBody r)
+             else Left . unwords $ ["HTTP error code:",show sc]
+    closeManager man
+    case er of
+      Right r -> return r
+      Left e -> error e
 {- http-enumerator version
 getMime :: Int -> String -> IO (String, String)
 getMime timeOutInSecs url = fmap (either (\(err::SomeException) -> error . unwords $ ["Could not GET",url,show err]) id) $ try $ timeOut (secs timeOutInSecs) $ do
