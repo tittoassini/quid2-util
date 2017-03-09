@@ -3,7 +3,12 @@ resolver: lts-6.30
 # Local packages, usually specified by relative directory name
 packages:
 - '.'
-- ../../.propellor
+# - ../../.propellor
+- location:
+    git: https://github.com/tittoassini/propellor
+    commit: 55ced769f1255dabfdaf99c2e09a154125346bc7
+  extra-dep: true
+
 
 # Packages to be pulled from upstream that are not in the resolver (e.g., acme-missiles-0.3)
 extra-deps:
