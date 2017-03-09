@@ -20,6 +20,9 @@ titto = "tittoassini@gmail.com"
 quidagent = "quidagent@gmail.com"
 
 email :: String -> String -> String -> IO ()
-email to title body = do
-  qpwd <- getPwd quidagent
-  sendGmail (fromString quidagent) (fromString qpwd) (Address Nothing (fromString quidagent)) [Address Nothing (fromString to)] [] [] (fromString title) (fromString body) [] (secs 10)
+email _ _ _ = return ()
+
+-- need to get propellor to work again first
+-- email to title body = do
+--   qpwd <- getPwd quidagent
+--   sendGmail (fromString quidagent) (fromString qpwd) (Address Nothing (fromString quidagent)) [Address Nothing (fromString to)] [] [] (fromString title) (fromString body) [] (secs 10)
